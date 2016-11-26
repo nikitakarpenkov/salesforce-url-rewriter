@@ -65,11 +65,27 @@ global class SiteUrlRewriter implements Site.UrlRewriter {
         }
         
         public Boolean match(PageReference that) {
-            List<String> thatPath = splitUrl(that.getUrl());
+            String thatUrlString = that.getUrl();
+            String thatPathString;
+            this.parameterMap = new Map<String, String>();
+            if (thatUrlString.contains('?')) {
+                thatPathString = thatUrlString.substringBefore('?');
+                String thatParametersString = thatUrlString.substringAfter('?');
+                List<String> thatParameterList = thatParametersString.split('&');
+                for (String parameterString_i : thatParameterList) {
+                    if (parameterString_i.contains('=')) {
+                        this.parameterMap.put(parameterString_i.substringBefore('='), parameterString_i.substringAfter('='));
+                    } else {
+                        this.parameterMap.put(parameterString_i, '1');
+                    }
+                }
+            } else {
+                thatPathString = thatUrlString;
+            }
+            List<String> thatPath = splitUrl(thatPathString);
             if (routePartList.size() != thatPath.size()) {
                 return false;
             }
-            this.parameterMap = new Map<String, String>();
             for (Integer i = 0; i < this.routePartList.size(); i++) {
                 if (routePartList[i].isParameter) {
                     parameterMap.put(routePartList[i].name, thatPath[i]);
